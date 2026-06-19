@@ -3,181 +3,79 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Color Chat</title>
+    <title>Chat</title>
     <style>
-      * {
-        box-sizing: border-box;
-      }
-
       body {
         margin: 0;
-        min-height: 100vh;
-        font-family: Arial, "Hiragino Sans", "Yu Gothic", sans-serif;
-        background: #f4f7fb;
-        color: #172033;
+        font-family: sans-serif;
       }
 
-      .chat {
-        display: grid;
-        grid-template-rows: auto 1fr auto;
-        width: min(100%, 760px);
-        height: 100vh;
+      .wrap {
+        max-width: 720px;
         margin: 0 auto;
-        background: #ffffff;
-        border-left: 1px solid #d8dee8;
-        border-right: 1px solid #d8dee8;
+        padding: 12px;
       }
 
-      .header {
+      h1 {
+        margin: 0 0 8px;
+        font-size: 20px;
+      }
+
+      .info {
+        margin: 0 0 12px;
+        font-size: 14px;
+      }
+
+      .join-form,
+      .form {
         display: flex;
-        align-items: center;
-        justify-content: space-between;
-        gap: 12px;
-        padding: 14px 16px;
-        border-bottom: 1px solid #d8dee8;
+        gap: 6px;
+        margin-bottom: 10px;
       }
 
-      .title {
-        margin: 0;
-        font-size: 18px;
+      input,
+      button {
+        font: inherit;
+        padding: 8px 10px;
       }
 
-      .status {
-        font-size: 13px;
-        color: #516075;
-        white-space: nowrap;
-      }
-
-      .profile {
-        display: grid;
-        grid-template-columns: 1fr auto auto;
-        gap: 8px;
-        padding: 12px 16px;
-        border-bottom: 1px solid #d8dee8;
-        background: #eef4ff;
-      }
-
-      .name,
-      .message-input {
-        width: 100%;
-        padding: 11px 12px;
-        border: 1px solid #b8c3d5;
-        border-radius: 6px;
-        font-size: 16px;
-      }
-
-      .color {
-        width: 44px;
-        height: 44px;
-        border: 1px solid #b8c3d5;
-        border-radius: 6px;
-        background: #ffffff;
-      }
-
-      .button {
-        min-height: 44px;
-        padding: 0 16px;
-        border: 0;
-        border-radius: 6px;
-        background: #172033;
-        color: #ffffff;
-        font-size: 15px;
-        font-weight: 700;
-        cursor: pointer;
-      }
-
-      .button:disabled {
-        opacity: 0.55;
-        cursor: not-allowed;
+      input[type="text"] {
+        flex: 1;
       }
 
       .messages {
-        display: flex;
-        flex-direction: column;
-        gap: 10px;
-        overflow-y: auto;
         list-style: none;
-        padding: 16px;
         margin: 0;
+        padding: 0;
+        border: 1px solid #ccc;
+        min-height: 320px;
       }
 
-      .message {
-        max-width: 82%;
-        padding: 10px 12px;
-        border: 1px solid #d8dee8;
-        border-left: 5px solid var(--message-color, #2563eb);
-        border-radius: 8px;
-        background: #ffffff;
+      .messages li {
+        padding: 6px 8px;
+        border-bottom: 1px solid #eee;
         word-break: break-word;
-      }
-
-      .meta {
-        display: flex;
-        gap: 8px;
-        align-items: baseline;
-        margin-bottom: 4px;
-        font-size: 13px;
-        color: #516075;
-      }
-
-      .user {
-        color: var(--message-color, #2563eb);
-        font-weight: 700;
-      }
-
-      .system {
-        align-self: center;
-        max-width: 95%;
-        padding: 7px 10px;
-        border-radius: 999px;
-        background: #eef4ff;
-        color: #516075;
-        font-size: 13px;
-      }
-
-      .form {
-        display: grid;
-        grid-template-columns: 1fr auto;
-        gap: 8px;
-        padding: 12px 16px;
-        border-top: 1px solid #d8dee8;
-      }
-
-      @media (max-width: 560px) {
-        .profile {
-          grid-template-columns: 1fr auto;
-        }
-
-        .profile .button {
-          grid-column: 1 / -1;
-        }
-
-        .message {
-          max-width: 100%;
-        }
       }
     </style>
   </head>
   <body>
-    <main class="chat">
-      <header class="header">
-        <h1 class="title">Color Chat</h1>
-        <div class="status">接続人数: <span class="count">0</span></div>
-      </header>
+    <div class="wrap">
+      <h1>Chat</h1>
+      <p class="info">謗･邯壻ｺｺ謨ｰ: <span class="count">0</span></p>
 
-      <section class="profile">
-        <input class="name" maxlength="20" placeholder="名前" value="Guest" />
-        <input class="color" type="color" value="#2563eb" aria-label="発言色" />
-        <button class="button join" type="button">入室</button>
-      </section>
+      <div class="join-form">
+        <input class="name" type="text" maxlength="20" placeholder="蜷榊燕" value="Guest" />
+        <input class="color" type="color" value="#2563eb" aria-label="濶ｲ" />
+        <button class="join" type="button">蜈･螳､</button>
+      </div>
 
       <ul class="messages"></ul>
 
       <form class="form">
-        <input class="message-input" autocomplete="off" placeholder="メッセージを入力" disabled />
-        <button class="button send" disabled>送信</button>
+        <input class="message-input" type="text" autocomplete="off" placeholder="繝｡繝・そ繝ｼ繧ｸ" disabled />
+        <button class="send" disabled>騾∽ｿ｡</button>
       </form>
-    </main>
+    </div>
 
     <script>
       const host = location.origin.replace(/^http/, 'ws')
@@ -194,32 +92,13 @@
 
       function addSystemMessage(text) {
         const li = document.createElement('li')
-        li.className = 'system'
         li.textContent = text
         messages.appendChild(li)
-        messages.scrollTop = messages.scrollHeight
       }
 
       function addChatMessage(data) {
         const li = document.createElement('li')
-        li.className = 'message'
-        li.style.setProperty('--message-color', data.color)
-
-        const meta = document.createElement('div')
-        meta.className = 'meta'
-
-        const user = document.createElement('span')
-        user.className = 'user'
-        user.textContent = data.name
-
-        const time = document.createElement('span')
-        time.textContent = data.time
-
-        const text = document.createElement('div')
-        text.textContent = data.text
-
-        meta.append(user, time)
-        li.append(meta, text)
+        li.textContent = `${data.name}: ${data.text}`
         messages.appendChild(li)
         messages.scrollTop = messages.scrollHeight
       }
@@ -248,10 +127,7 @@
       form.addEventListener('submit', (event) => {
         event.preventDefault()
         const text = input.value.trim()
-
-        if (text === '') {
-          return
-        }
+        if (text === '') return
 
         send({
           type: 'chat',
@@ -262,7 +138,7 @@
       })
 
       ws.addEventListener('open', () => {
-        addSystemMessage('接続しました。名前と色を選んで入室してください。')
+        addSystemMessage('謗･邯壹＠縺ｾ縺励◆')
       })
 
       ws.addEventListener('message', (event) => {
@@ -270,10 +146,12 @@
 
         if (data.type === 'count') {
           count.textContent = data.count
+          return
         }
 
         if (data.type === 'system') {
           addSystemMessage(data.text)
+          return
         }
 
         if (data.type === 'chat') {
@@ -284,11 +162,11 @@
       ws.addEventListener('close', () => {
         input.disabled = true
         sendButton.disabled = true
-        addSystemMessage('サーバーとの接続が切れました。')
+        addSystemMessage('蛻・妙縺輔ｌ縺ｾ縺励◆')
       })
 
       ws.addEventListener('error', () => {
-        addSystemMessage('接続エラーが発生しました。')
+        addSystemMessage('繧ｨ繝ｩ繝ｼ')
       })
     </script>
   </body>
