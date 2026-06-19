@@ -5,26 +5,80 @@ const app = express()
 expressWs(app)
 
 const port = process.env.PORT || 3001
-let connects = []
+let connections = []
 
 app.use(express.static('public'))
 
-app.ws('/ws', (ws, req) => {
-  connects.push(ws)
+function broadcast(data) {
+  const message = JSON.stringify(data)
 
-  ws.on('message', (message) => {
-    console.log('Received:', message)
+  connections.forEach((client) => {
+    if (client.ws.readyState === 1) {
+      client.ws.send(message)
+    }
+  })
+}
 
-    connects.forEach((socket) => {
-      if (socket.readyState === 1) {
-        // Check if the connection is open
-        socket.send(message)
-      }
-    })
+function sendUserCount() {
+  broadcast({
+    type: 'count',
+    count: connections.length,
+  })
+}
+
+app.ws('/ws', (ws) => {
+  const client = {
+    id: Date.now().toString(36) + Math.random().toString(36).slice(2),
+    name: 'Guest',
+    color: '#2563eb',
+    ws,
+  }
+
+  connections.push(client)
+  sendUserCount()
+
+  ws.on('message', (rawMessage) => {
+    let data
+
+    try {
+      data = JSON.parse(rawMessage)
+    } catch (error) {
+      data = { type: 'chat', text: String(rawMessage) }
+    }
+
+    if (data.type === 'join') {
+      client.name = data.name || 'Guest'
+      client.color = data.color || '#2563eb'
+      broadcast({
+        type: 'system',
+        text: `${client.name} さんが入室しました`,
+      })
+      sendUserCount()
+      return
+    }
+
+    if (data.type === 'chat' && data.text.trim() !== '') {
+      broadcast({
+        type: 'chat',
+        id: client.id,
+        name: client.name,
+        color: client.color,
+        text: data.text.trim(),
+        time: new Date().toLocaleTimeString('ja-JP', {
+          hour: '2-digit',
+          minute: '2-digit',
+        }),
+      })
+    }
   })
 
   ws.on('close', () => {
-    connects = connects.filter((conn) => conn !== ws)
+    connections = connections.filter((connection) => connection.ws !== ws)
+    broadcast({
+      type: 'system',
+      text: `${client.name} さんが退室しました`,
+    })
+    sendUserCount()
   })
 })
 
