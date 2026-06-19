@@ -3,75 +3,293 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Chat App</title>
+    <title>Color Chat</title>
     <style>
+      * {
+        box-sizing: border-box;
+      }
+
+      body {
+        margin: 0;
+        min-height: 100vh;
+        font-family: Arial, "Hiragino Sans", "Yu Gothic", sans-serif;
+        background: #f4f7fb;
+        color: #172033;
+      }
+
       .chat {
+        display: grid;
+        grid-template-rows: auto 1fr auto;
+        width: min(100%, 760px);
+        height: 100vh;
+        margin: 0 auto;
+        background: #ffffff;
+        border-left: 1px solid #d8dee8;
+        border-right: 1px solid #d8dee8;
+      }
+
+      .header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 12px;
+        padding: 14px 16px;
+        border-bottom: 1px solid #d8dee8;
+      }
+
+      .title {
+        margin: 0;
+        font-size: 18px;
+      }
+
+      .status {
+        font-size: 13px;
+        color: #516075;
+        white-space: nowrap;
+      }
+
+      .profile {
+        display: grid;
+        grid-template-columns: 1fr auto auto;
+        gap: 8px;
+        padding: 12px 16px;
+        border-bottom: 1px solid #d8dee8;
+        background: #eef4ff;
+      }
+
+      .name,
+      .message-input {
+        width: 100%;
+        padding: 11px 12px;
+        border: 1px solid #b8c3d5;
+        border-radius: 6px;
+        font-size: 16px;
+      }
+
+      .color {
+        width: 44px;
+        height: 44px;
+        border: 1px solid #b8c3d5;
+        border-radius: 6px;
+        background: #ffffff;
+      }
+
+      .button {
+        min-height: 44px;
+        padding: 0 16px;
+        border: 0;
+        border-radius: 6px;
+        background: #172033;
+        color: #ffffff;
+        font-size: 15px;
+        font-weight: 700;
+        cursor: pointer;
+      }
+
+      .button:disabled {
+        opacity: 0.55;
+        cursor: not-allowed;
+      }
+
+      .messages {
         display: flex;
         flex-direction: column;
-        height: 100vh;
-      }
-      .messages {
-        flex: 1;
+        gap: 10px;
         overflow-y: auto;
         list-style: none;
-        padding: 0;
+        padding: 16px;
         margin: 0;
       }
-      .form {
+
+      .message {
+        max-width: 82%;
+        padding: 10px 12px;
+        border: 1px solid #d8dee8;
+        border-left: 5px solid var(--message-color, #2563eb);
+        border-radius: 8px;
+        background: #ffffff;
+        word-break: break-word;
+      }
+
+      .meta {
         display: flex;
+        gap: 8px;
+        align-items: baseline;
+        margin-bottom: 4px;
+        font-size: 13px;
+        color: #516075;
       }
-      .input {
-        flex: 1;
-        padding: 10px;
-        border: 1px solid #ccc;
+
+      .user {
+        color: var(--message-color, #2563eb);
+        font-weight: 700;
       }
-      .submit {
-        padding: 10px;
-        border: 1px solid #ccc;
-        background: #eee;
-        cursor: pointer;
+
+      .system {
+        align-self: center;
+        max-width: 95%;
+        padding: 7px 10px;
+        border-radius: 999px;
+        background: #eef4ff;
+        color: #516075;
+        font-size: 13px;
+      }
+
+      .form {
+        display: grid;
+        grid-template-columns: 1fr auto;
+        gap: 8px;
+        padding: 12px 16px;
+        border-top: 1px solid #d8dee8;
+      }
+
+      @media (max-width: 560px) {
+        .profile {
+          grid-template-columns: 1fr auto;
+        }
+
+        .profile .button {
+          grid-column: 1 / -1;
+        }
+
+        .message {
+          max-width: 100%;
+        }
       }
     </style>
   </head>
   <body>
-    <div class="chat">
+    <main class="chat">
+      <header class="header">
+        <h1 class="title">Color Chat</h1>
+        <div class="status">接続人数: <span class="count">0</span></div>
+      </header>
+
+      <section class="profile">
+        <input class="name" maxlength="20" placeholder="名前" value="Guest" />
+        <input class="color" type="color" value="#2563eb" aria-label="発言色" />
+        <button class="button join" type="button">入室</button>
+      </section>
+
       <ul class="messages"></ul>
+
       <form class="form">
-        <input class="input" autocomplete="off" />
-        <button class="submit">Send</button>
+        <input class="message-input" autocomplete="off" placeholder="メッセージを入力" disabled />
+        <button class="button send" disabled>送信</button>
       </form>
-    </div>
+    </main>
 
     <script>
-      function main() {
-        const host = location.origin.replace(/^http/, 'ws')
-        const ws = new WebSocket(host + '/ws')
+      const host = location.origin.replace(/^http/, 'ws')
+      const ws = new WebSocket(`${host}/ws`)
 
-        const form = document.querySelector('.form')
+      const form = document.querySelector('.form')
+      const input = document.querySelector('.message-input')
+      const messages = document.querySelector('.messages')
+      const joinButton = document.querySelector('.join')
+      const nameInput = document.querySelector('.name')
+      const colorInput = document.querySelector('.color')
+      const count = document.querySelector('.count')
+      const sendButton = document.querySelector('.send')
 
-        form.onsubmit = function (e) {
-          e.preventDefault()
-          const input = document.querySelector('.input')
-          const text = input.value
-          ws.send(text)
-          input.value = ''
-          input.focus()
-        }
+      function addSystemMessage(text) {
+        const li = document.createElement('li')
+        li.className = 'system'
+        li.textContent = text
+        messages.appendChild(li)
+        messages.scrollTop = messages.scrollHeight
+      }
 
-        ws.onmessage = function (msg) {
-          const response = msg.data
-          const messageList = document.querySelector('.messages')
-          const li = document.createElement('li')
-          li.textContent = response
-          messageList.appendChild(li)
-        }
+      function addChatMessage(data) {
+        const li = document.createElement('li')
+        li.className = 'message'
+        li.style.setProperty('--message-color', data.color)
 
-        ws.onerror = function (error) {
-          console.error('WebSocket Error: ', error)
+        const meta = document.createElement('div')
+        meta.className = 'meta'
+
+        const user = document.createElement('span')
+        user.className = 'user'
+        user.textContent = data.name
+
+        const time = document.createElement('span')
+        time.textContent = data.time
+
+        const text = document.createElement('div')
+        text.textContent = data.text
+
+        meta.append(user, time)
+        li.append(meta, text)
+        messages.appendChild(li)
+        messages.scrollTop = messages.scrollHeight
+      }
+
+      function send(data) {
+        if (ws.readyState === WebSocket.OPEN) {
+          ws.send(JSON.stringify(data))
         }
       }
 
-      main()
+      joinButton.addEventListener('click', () => {
+        const name = nameInput.value.trim() || 'Guest'
+        send({
+          type: 'join',
+          name,
+          color: colorInput.value,
+        })
+        nameInput.disabled = true
+        colorInput.disabled = true
+        joinButton.disabled = true
+        input.disabled = false
+        sendButton.disabled = false
+        input.focus()
+      })
+
+      form.addEventListener('submit', (event) => {
+        event.preventDefault()
+        const text = input.value.trim()
+
+        if (text === '') {
+          return
+        }
+
+        send({
+          type: 'chat',
+          text,
+        })
+        input.value = ''
+        input.focus()
+      })
+
+      ws.addEventListener('open', () => {
+        addSystemMessage('接続しました。名前と色を選んで入室してください。')
+      })
+
+      ws.addEventListener('message', (event) => {
+        const data = JSON.parse(event.data)
+
+        if (data.type === 'count') {
+          count.textContent = data.count
+        }
+
+        if (data.type === 'system') {
+          addSystemMessage(data.text)
+        }
+
+        if (data.type === 'chat') {
+          addChatMessage(data)
+        }
+      })
+
+      ws.addEventListener('close', () => {
+        input.disabled = true
+        sendButton.disabled = true
+        addSystemMessage('サーバーとの接続が切れました。')
+      })
+
+      ws.addEventListener('error', () => {
+        addSystemMessage('接続エラーが発生しました。')
+      })
     </script>
   </body>
 </html>
